@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:14.2-alpine
+    restart: on-failure
+    environment:
+      - POSTGRES_DB=example
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=w4E7Admmb7JHq3CFMUAV
+    ports:
+      - 5432:5432
+    volumes:
+      - ./data:/var/lib/postgresql/data

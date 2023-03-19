@@ -161,3 +161,9 @@ cython_debug/
 
 # i18n
 i18n/english.json
+
+# Docker
+docker/mariadb/data
+docker/mongo/data
+docker/mysql/data
+docker/postgres/data

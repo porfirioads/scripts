@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  mariadb:
+    image: mariadb:10.7.4-focal
+    restart: on-failure
+    environment:
+      - TZ=UTC
+      - MYSQL_ROOT_USER=root
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=example
+      - MYSQL_USER=example
+      - MYSQL_PASSWORD=example
+    volumes:
+      - ./data:/var/lib/mysql
+    ports:
+      - 3306:3306
