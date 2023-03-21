@@ -7,15 +7,10 @@ if len(sys.argv) != 2:
     print('Uso: python i18n/get_missing_translations.py <file_es.json>')
     exit(1)
 
-# Rutas de los archivos
+# Rutas del archivo
 json_file_es = sys.argv[1]
-json_file_en = os.path.splitext(json_file_es)[0] + '_en.json'
 
-if os.path.isfile(json_file_en):
-    with open(json_file_en, 'r', encoding='utf-8') as f:
-        en_data = json.load(f)
-else:
-    en_data = {}
+en_data = {}
 
 # Cargar archivo en español
 with open(json_file_es, 'r', encoding='utf-8') as f:
@@ -38,8 +33,8 @@ for key in es_data.keys():
 
         # Guardar la traducción en el archivo en inglés
         en_data[key] = translation
-        with open(json_file_en, 'w', encoding='utf-8') as f:
-            json.dump(en_data, f, ensure_ascii=False, indent=4)
 
     except Exception as e:
         print(f'Error al traducir clave {key}: {e}')
+
+print(json.dumps(en_data, ensure_ascii=False, indent=4))
