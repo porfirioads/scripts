@@ -167,3 +167,4 @@ docker/mariadb/data
 docker/mongo/data
 docker/mysql/data
 docker/postgres/data
+docker/wikijs/data
