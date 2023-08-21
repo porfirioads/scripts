@@ -31,13 +31,13 @@ complete -F _complete_ssh_hosts ssh
 
 
 # Jetbrains Toolbox
-export PATH="$PATH:/Users/porfirioads/Library/Application Support/JetBrains/Toolbox/scripts"
+export PATH="$PATH:/Users/USERNAME/Library/Application Support/JetBrains/Toolbox/scripts"
 
 # VSCode
 export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
 
 # Python
-export PATH="$PATH:/Users/porfirioads/Library/Python/3.8/bin"
+export PATH="$PATH:/Users/USERNAME/Library/Python/3.8/bin"
 
 # Local bin
 export PATH="$PATH:/usr/local/bin"
