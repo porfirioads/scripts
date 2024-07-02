@@ -2,12 +2,87 @@ version: "3.8"
 
 services:
   mongodb:
-    image: mongo:5.0.6-focal
-    restart: on-failure
+    image: mongo:5.0.27
+    restart: always
     environment:
       - MONGO_INITDB_ROOT_USERNAME=mongodb
       - MONGO_INITDB_ROOT_PASSWORD=mongodb
     ports:
       - 27017:27017
     volumes:
-      - ./data:/data/db
+      - ${MONGODB_PRIMARY_DATA_HOST_PATH:-./data/db-primary}:/data/db
+      - ./mongo-auth.key:/etc/mongo-auth.key
+    command: >
+      bash -c "
+        chmod 400 /etc/mongo-auth.key &&
+        /usr/local/bin/docker-entrypoint.sh mongod --replSet rs0 --keyFile /etc/mongo-auth.key --bind_ip_all --auth
+      "
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mongo-network
+
+  mongodb-secondary:
+    image: mongo:5.0.27
+    restart: always
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongodb
+      - MONGO_INITDB_ROOT_PASSWORD=mongodb
+    volumes:
+      - ${MONGODB_SECONDARY_DATA_HOST_PATH:-./data/db-secondary}:/data/db
+      - ./mongo-auth.key:/etc/mongo-auth.key
+    command: >
+      bash -c "
+        chmod 400 /etc/mongo-auth.key &&
+        /usr/local/bin/docker-entrypoint.sh mongod --replSet rs0 --keyFile /etc/mongo-auth.key --bind_ip_all --auth
+      "
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mongo-network
+
+  mongo-replica-init:
+    image: mongo:5.0.27
+    restart: on-failure
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      mongodb-secondary:
+        condition: service_healthy
+    volumes:
+      - ./mongo-auth.key:/etc/mongo-auth.key
+    entrypoint: >
+      bash -c "
+        chmod 400 /etc/mongo-auth.key;
+        sleep 10;
+        mongo --host mongodb:27017 -u mongodb -p mongodb --authenticationDatabase admin --eval '
+          var rsConf = {
+            _id: \"rs0\",
+            protocolVersion: 1,
+            members: [
+              { _id: 0, host: \"mongodb:27017\" },
+              { _id: 1, host: \"mongodb-secondary:27017\" }
+            ]
+          };
+          var rsStatus = rs.status();
+          if (!rsStatus.ok) {
+            rs.initiate(rsConf);
+          } else if (rsStatus.members.length !== 2) {
+            rs.reconfig(rsConf, { force: true });
+          }
+        '
+      "
+    networks:
+      - mongo-network
+
+networks:
+  mongo-network:
+    driver: bridge
